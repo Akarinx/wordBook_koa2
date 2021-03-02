@@ -6,5 +6,9 @@ module.exports = {
     uuid: String, // UUID
     userName: String, // 用户名
     password: String, // 密码
+    usingtime: [{
+      date: String,
+      time: Number
+    }]
   }
 };
