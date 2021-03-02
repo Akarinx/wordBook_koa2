@@ -11,6 +11,11 @@ shanbei.dailyquote = async (ctx, next) => {
   }
   return next()
 }
+/**
+ * @description 接收上传文件
+ * @param {username:string} ctx.request.body
+ * @param {file:FormData} ctx.request.files
+ */
 shanbei.uploadFiles = async (ctx, next) => {
   const res = await dealFile(ctx)
   if (res) {
@@ -27,17 +32,19 @@ shanbei.uploadFiles = async (ctx, next) => {
   return next()
 }
 // 上传文件主函数
-// 文件名: [username]__[filename].[...]  区分用户并放入对应文件夹内
+// 
 const dealFile = ctx => {
   const {
     file
   } = ctx.request.files;
-  console.log(file.path, 'abc')
+  const {
+    username
+  } = ctx.request.body
+  const filename = file.name
   const reader = fs.createReadStream(file.path); // 可读流 读取文件路径
-  const [user, filename] = file.name.split('__')
   const writer = fs.createWriteStream( // 可写流 写入文件的路径
     // 文件上传到 image 文件夹中
-    path.resolve(__dirname, `../public/${user}`, filename)
+    path.resolve(__dirname, `../public/${username}`, filename)
   );
 
   return new Promise((resolve, reject) => {
