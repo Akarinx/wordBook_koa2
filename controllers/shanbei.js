@@ -18,6 +18,8 @@ shanbei.dailyquote = async (ctx, next) => {
  */
 shanbei.uploadFiles = async (ctx, next) => {
   const res = await dealFile(ctx)
+  //多文件时res为[]
+  //@todo:若上传非csv文件则驳回并提示错误
   if (res) {
     ctx.result = {
       msg: 'complete'
@@ -32,7 +34,6 @@ shanbei.uploadFiles = async (ctx, next) => {
   return next()
 }
 // 上传文件主函数
-// 
 const dealFile = ctx => {
   const {
     file
@@ -40,7 +41,21 @@ const dealFile = ctx => {
   const {
     username
   } = ctx.request.body
+  if (Array.isArray(file)) {
+    const promiseArr = []
+    file.forEach(singleFile => {
+      promiseArr.push(dealFilesUpload(singleFile, username))
+    });
+    return Promise.all(promiseArr)
+  } else {
+    return dealFilesUpload(file, username)
+  }
+}
+// 存储文件核心
+const dealFilesUpload = async (file, username) => {
   const filename = file.name
+  const type = filename.split('.').pop()
+  if (type !== 'csv') return false
   const reader = fs.createReadStream(file.path); // 可读流 读取文件路径
   const writer = fs.createWriteStream( // 可写流 写入文件的路径
     // 文件上传到 image 文件夹中
@@ -61,6 +76,7 @@ const dealFile = ctx => {
 
   });
 }
+
 // 获取用户信息并创建文件夹
 shanbei.getUserDetail = async (ctx, next) => {
   const {
@@ -83,6 +99,7 @@ shanbei.getUserDetail = async (ctx, next) => {
   }
   return next()
 }
+
 // 存储更新用户当日登录时长
 shanbei.postUserTime = async (ctx, next) => {
   const {
@@ -94,6 +111,39 @@ shanbei.postUserTime = async (ctx, next) => {
     username,
     date,
     time
+  })
+  ctx.msg = '1'
+  ctx.result = res
+  return next()
+}
+
+//存储更新用户当日最高错题次数
+shanbei.postUserWords = async (ctx, next) => {
+  const {
+    username,
+    date,
+    Counter
+  } = ctx.request.body
+  const res = await userServices.postUserWords({
+    username,
+    date,
+    Counter
+  })
+  ctx.msg = '1'
+  ctx.result = res
+  return next()
+}
+
+//存储更新用户错题本
+shanbei.postUserWrongWordBook = async (ctx, next) => {
+  const {
+    username,
+    words
+  } = ctx.request.body
+  console.log(username, words, '123')
+  const res = await userServices.postWrongWordBook({
+    username,
+    words
   })
   ctx.msg = '1'
   ctx.result = res

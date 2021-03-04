@@ -9,6 +9,11 @@ module.exports = {
     usingtime: [{
       date: String,
       time: Number
-    }]
+    }],
+    wordCount: [{
+      date: String,
+      Counter: Number
+    }],
+    wrongWordBook: [String]
   }
 };
